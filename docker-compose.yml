@@ -1,0 +1,71 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: e_piket_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-piketsmkpenus#}
+      MYSQL_DATABASE: ${DB_NAME:-digitalpiket}
+      MYSQL_USER: ${DB_USER:-digitalpiket}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-piketsmkpenus#}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - e_piket_network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: e_piket_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "${PMA_PORT:-8080}:80"
+    networks:
+      - e_piket_network
+
+  # Optional backend container (bisa dijalankan via 'docker compose --profile full up')
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: e_piket_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      APP_PORT: ${APP_PORT:-3000}
+      APP_ENV: production
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER:-digitalpiket}
+      DB_PASSWORD: ${DB_PASSWORD:-piketsmkpenus#}
+      DB_NAME: ${DB_NAME:-digitalpiket}
+    ports:
+      - "${APP_PORT:-3000}:${APP_PORT:-3000}"
+    networks:
+      - e_piket_network
+    profiles:
+      - full
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  e_piket_network:
+    driver: bridge
