@@ -79,28 +79,6 @@ curl -X POST http://localhost:3000/api/v1/users \
 
 ---
 
-## 📁 Struktur Direktori
-
-```text
-.
-├── cmd/
-│   └── api/
-│       └── main.go           # Entry point aplikasi Fiber v3
-├── config/
-│   ├── config.go             # Loader konfigurasi environment (.env)
-│   └── database.go           # Koneksi database MySQL & Auto-migrate
-├── internal/
-│   ├── handlers/             # HTTP controller / handler fungsi
-│   ├── models/               # Model GORM & struct database
-│   └── routes/               # Definisi routing & middleware
-├── docker-compose.yml        # Orkestrasi MySQL & phpMyAdmin
-├── Dockerfile                # Dockerfile multi-stage production
-├── .env.example
-└── go.mod
-```
-
----
-
 ## 🔗 Referensi
 
 - [Dokumentasi Go Fiber v3](https://docs.gofiber.io/)
